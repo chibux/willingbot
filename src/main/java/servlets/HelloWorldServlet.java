@@ -34,6 +34,7 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String MESSAGE = "message";
     private static final String TEXT = "text";
     private static final String POSTBACK = "postback";
+    private static final String TRANSFER = "transfer";
 
 
     private static final String HELLO_MESSAGE = "hello";
@@ -99,6 +100,9 @@ public class HelloWorldServlet extends HttpServlet {
                         break;
                     case PROVIDE_ASSISTANCE_MESSAGE:
                         sendOptions(senderId, BOT_LIST_OF_PERSONS);
+                        break;
+                    case TRANSFER:
+                        contactPersonInNeed(1059287277465794L);
                         break;
                     default:
                         if(needers.containsKey(id)){
@@ -198,5 +202,12 @@ public class HelloWorldServlet extends HttpServlet {
         }
     }
 
+    private void contactPersonInNeed(Long idPersonInNeed){
+        JSONObject sender = new JSONObject();
+        sender.put("id", idPersonInNeed);
+
+        sendTextResponse(sender, "I can provide help: " +
+                "https://www.facebook.com/profile.php?id=100001535955409");
+    }
 
 }

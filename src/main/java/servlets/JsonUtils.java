@@ -1,7 +1,6 @@
 package servlets;
 
 import org.json.JSONObject;
-import sun.nio.cs.ext.SJIS;
 
 import java.util.Set;
 
@@ -39,31 +38,31 @@ public class JsonUtils {
 
     }
 
-    public static JSONObject getMessagingObject(JSONObject entry){
-
-    }
-
-    public static JSONObject getSenderObject(JSONObject entry){
-
-    }
-
-    public static JSONObject getMessageObject(JSONObject entry){
-
-    }
-
-    public static JSONObject getCoordinatesObject(JSONObject entry){
-
-    }
-
-    public static  JSONObject getPayloadObject(JSONObject entry){
-
-    }
-
-    public static JSONObject getLocationTitleObject(JSONObject entry){
-
-    }
-
-    public static JSONObject getLoocationUrlObject(JSONObject entry){
-
-    }
+//    public static JSONObject getMessagingObject(JSONObject entry){
+//
+//    }
+//
+//    public static JSONObject getSenderObject(JSONObject entry){
+//
+//    }
+//
+//    public static JSONObject getMessageObject(JSONObject entry){
+//
+//    }
+//
+//    public static JSONObject getCoordinatesObject(JSONObject entry){
+//
+//    }
+//
+//    public static  JSONObject getPayloadObject(JSONObject entry){
+//
+//    }
+//
+//    public static JSONObject getLocationTitleObject(JSONObject entry){
+//
+//    }
+//
+//    public static JSONObject getLoocationUrlObject(JSONObject entry){
+//
+//    }
 }

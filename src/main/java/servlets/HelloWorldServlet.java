@@ -27,6 +27,13 @@ import java.util.Map;
 public class HelloWorldServlet extends HttpServlet {
     private static String PAGE_TOKEN = "EAAIbsSXN1U8BAM39eXNXAI8Hj5rUwaTG1zOw6Pfdiwfkc2QnAMD4ZBXJOkakDwaHbV5kuouSKZCPAIcZB3xDZBUaZCuuXXWuSt2vuMQRz6y2QDslJQZBI5ZC4ZBz1u8q4RaFzvX8PZCExsicgzvUd19K1cMwLNQgZC6ZAZBWGBFInXt1NQZDZD";
 
+    private static final String  SENDER = "sender";
+    private static final String  MESSAGING = "messaging";
+    private static final String  ENTRY = "entry";
+    private static final String  RECIPIENT = "recipient";
+    private static final String  MESSAGE = "message";
+    private static final String  TEXT = "text";
+
 
 
     @Override
@@ -48,26 +55,42 @@ public class HelloWorldServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestMessage = request.getReader().readLine();
 
+        String textResponse = "Do you need assistance or can help?";
 
-        JSONObject jsonObject = new JSONObject(requestMessage);
-        JSONObject entry = jsonObject.getJSONArray("entry").getJSONObject(0);
-        System.out.println(entry);
+        JSONObject requestEntry = new JSONObject(requestMessage);
+        System.out.println(requestEntry);
 
-        JSONObject messaging = entry.getJSONArray("messaging").getJSONObject(0);
-        Long time = entry.getLong("time");
-        System.out.println("time " + time);
+        JSONObject entry = requestEntry.getJSONArray(ENTRY).getJSONObject(0);
+        JSONObject messaging = entry.getJSONArray(MESSAGING).getJSONObject(0);
+        JSONObject senderId = messaging.getJSONObject(SENDER);
 
-        JSONObject senderId = messaging.getJSONObject("sender");
-        if (!messaging.isNull("message")) {
-            sendMessage(senderId);
+        if (!messaging.isNull(MESSAGE)) {
+            JSONObject message = messaging.getJSONObject(MESSAGE);
+            if (!message.isNull(TEXT) && message.get(TEXT).equals("hello"))
+            sendTextResponse(senderId, textResponse);
+        }
+    }
+
+
+
+    private void sendTextResponse(JSONObject senderId, String textResponse) {
+        JSONObject response = new JSONObject();
+        response.put(RECIPIENT, senderId);
+        JSONObject message = new JSONObject();
+        message.put(TEXT, textResponse);
+        response.put(MESSAGE, message);
+
+        try {
+            sendPostResponseToUser(response.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
 
-    private void sendPost(String message) throws Exception {
+    private void sendPostResponseToUser(String message) throws Exception {
 
         String urlParameters = "access_token=" + PAGE_TOKEN;
-
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpHost https = new HttpHost("graph.facebook.com", 443, "https");
             HttpPost request = new HttpPost();
@@ -78,25 +101,6 @@ public class HelloWorldServlet extends HttpServlet {
             System.out.print(execute.getStatusLine().getStatusCode());
             System.out.print(new java.util.Scanner(execute.getEntity().getContent(), "UTF-8").useDelimiter("\\A"));
         }
-    }
-
-
-    private void sendMessage(JSONObject senderId) {
-
-        JSONObject recipient = new JSONObject();
-        recipient.put("recipient", senderId);
-        JSONObject message = new JSONObject();
-
-        message.put("text", "hello world!");
-        recipient.put("message", message);
-
-        System.out.println(recipient.toString());
-        try {
-            sendPost(recipient.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
 

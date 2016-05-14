@@ -7,19 +7,20 @@ package servlets;
  */
 public class Person {
 
-    private  Integer id;
+    private Long id;
     private String title;
     private String locationUrl;
     private String coordinateLong;
     private String coordinateLat;
     private Boolean assistanceProvides;
     private Boolean assistanceRequires;
+    private String assistanceMessage;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -69,5 +70,13 @@ public class Person {
 
     public void setAssistanceRequires(Boolean assistanceRequires) {
         this.assistanceRequires = assistanceRequires;
+    }
+
+    public String getAssistanceMessage() {
+        return assistanceMessage;
+    }
+
+    public void setAssistanceMessage(String assistanceMessage) {
+        this.assistanceMessage = assistanceMessage;
     }
 }

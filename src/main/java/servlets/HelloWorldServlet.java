@@ -34,6 +34,21 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String  MESSAGE = "message";
     private static final String  TEXT = "text";
 
+    private static final String HELLO_MESSAGE = "hello";
+    private static final String ASSISTANCE_MESSAGE = "assistance";
+    private static final String PROVIDE_ASSISTANCE_MESSAGE = "provide assistance";
+    private static final String ACCEPT_MESSAGE = "accept";
+    private static final String REJECT_MESSAGE = "reject";
+
+    private static final String BOT_TO_HELLO = "Do you need assistance or can help?";
+    private static final String BOT_DESCRIBE_ASSISTANCE = "Describe, what kind of assistance you need";
+    private static final String BOT_LIST_OF_PERSONS = "Here are a persons who need some assistance. Pick one.";
+    private static final String BOT_REQUEST_ACCEPTED = "Your request accepted";
+    private static final String BOT_REQUEST_MESSAGE = "You'll be notified when someone can help you";
+    private static final String BOT_REQUEST_EXPIRATION_WARNING = "Your will be expired in 2 hours";
+
+
+
 
 
     @Override
@@ -55,7 +70,7 @@ public class HelloWorldServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestMessage = request.getReader().readLine();
 
-        String textResponse = "Do you need assistance or can help?";
+        String textResponse = "Hi there!";
 
         JSONObject requestEntry = new JSONObject(requestMessage);
         System.out.println(requestEntry);
@@ -66,7 +81,18 @@ public class HelloWorldServlet extends HttpServlet {
 
         if (!messaging.isNull(MESSAGE)) {
             JSONObject message = messaging.getJSONObject(MESSAGE);
-            if (!message.isNull(TEXT) && message.get(TEXT).equals("hello"))
+
+            if (!message.isNull(TEXT)){
+
+                String text = message.get(TEXT).toString();
+                switch (text){
+                    case HELLO_MESSAGE: textResponse = BOT_TO_HELLO;
+                        break;
+                    case ASSISTANCE_MESSAGE: textResponse =  BOT_DESCRIBE_ASSISTANCE;
+                        break;
+                    case PROVIDE_ASSISTANCE_MESSAGE: textResponse = BOT_LIST_OF_PERSONS;
+                }
+            }
             sendTextResponse(senderId, textResponse);
         }
     }

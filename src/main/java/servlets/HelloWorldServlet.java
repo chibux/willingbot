@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -48,6 +49,8 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String BOT_REQUEST_MESSAGE = "You'll be notified when someone can help you";
     private static final String BOT_REQUEST_EXPIRATION_WARNING = "Your will be expired in 2 hours";
 
+    Map <String, Person> providers = new HashMap<>();
+    Map<String , Person> needers = new HashMap<>();
 
 
 
@@ -90,9 +93,12 @@ public class HelloWorldServlet extends HttpServlet {
                     case HELLO_MESSAGE:
                         sendOptions(senderId, textResponse);
                         break;
-                    case ASSISTANCE_MESSAGE: textResponse =  BOT_DESCRIBE_ASSISTANCE;
+                    case ASSISTANCE_MESSAGE: sendOptions(senderId, BOT_DESCRIBE_ASSISTANCE);
                         break;
-                    case PROVIDE_ASSISTANCE_MESSAGE: textResponse = BOT_LIST_OF_PERSONS;
+                    case PROVIDE_ASSISTANCE_MESSAGE: sendOptions(senderId, BOT_LIST_OF_PERSONS);
+                        break;
+                    default:
+                        sendTextResponse(senderId, HELLO_MESSAGE);
                 }
             }
             //sendTextResponse(senderId, textResponse);
@@ -101,7 +107,6 @@ public class HelloWorldServlet extends HttpServlet {
 
 
     private void sendOptions(JSONObject senderId, String textResponse) {
-
 
             JSONObject recipient = new JSONObject();
             recipient.put("recipient", senderId);

@@ -7,6 +7,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.ServletException;
@@ -86,18 +87,64 @@ public class HelloWorldServlet extends HttpServlet {
 
                 String text = message.get(TEXT).toString();
                 switch (text){
-                    case HELLO_MESSAGE: textResponse = BOT_TO_HELLO;
+                    case HELLO_MESSAGE:
+                        sendOptions(senderId, textResponse);
                         break;
                     case ASSISTANCE_MESSAGE: textResponse =  BOT_DESCRIBE_ASSISTANCE;
                         break;
                     case PROVIDE_ASSISTANCE_MESSAGE: textResponse = BOT_LIST_OF_PERSONS;
                 }
             }
-            sendTextResponse(senderId, textResponse);
+            //sendTextResponse(senderId, textResponse);
         }
     }
 
 
+    private void sendOptions(JSONObject senderId, String textResponse) {
+
+
+            JSONObject recipient = new JSONObject();
+            recipient.put("recipient", senderId);
+
+
+            JSONObject attachmentObj = new JSONObject();
+            attachmentObj.put("type", "template");
+
+            JSONObject payloadObj = new JSONObject();
+            payloadObj.put("template_type", "button");
+            payloadObj.put("text", textResponse);
+
+            JSONArray buttonArray = new JSONArray();
+
+        JSONObject button1 = new JSONObject();
+        button1.put("type", "postback");
+        button1.put("payload", ASSISTANCE_MESSAGE);
+        button1.put("title", "Need Assistance");
+
+            JSONObject button2 = new JSONObject();
+        button2.put("type", "postback");
+        button2.put("payload", PROVIDE_ASSISTANCE_MESSAGE);
+        button2.put("title", "Provide Assistance");
+
+            buttonArray.put(button1);
+            buttonArray.put(button2);
+            payloadObj.put("buttons", buttonArray);
+
+            attachmentObj.put("payload", payloadObj);
+
+            JSONObject message = new JSONObject();
+            message.put("attachment", attachmentObj);
+            recipient.put("message", message);
+
+            System.out.println(recipient.toString());
+
+            try {
+                 sendPostResponseToUser(recipient.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+    }
 
     private void sendTextResponse(JSONObject senderId, String textResponse) {
         JSONObject response = new JSONObject();

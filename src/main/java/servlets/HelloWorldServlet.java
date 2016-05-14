@@ -27,32 +27,31 @@ import java.util.Map;
  */
 @WebServlet("/webhook")
 public class HelloWorldServlet extends HttpServlet {
-    private static String PAGE_TOKEN = "EAAIbsSXN1U8BAM39eXNXAI8Hj5rUwaTG1zOw6Pfdiwfkc2QnAMD4ZBXJOkakDwaHbV5kuouSKZCPAIcZB3xDZBUaZCuuXXWuSt2vuMQRz6y2QDslJQZBI5ZC4ZBz1u8q4RaFzvX8PZCExsicgzvUd19K1cMwLNQgZC6ZAZBWGBFInXt1NQZDZD";
+    private static final String SENDER = "sender";
+    private static final String MESSAGING = "messaging";
+    private static final String ENTRY = "entry";
+    private static final String RECIPIENT = "recipient";
+    private static final String MESSAGE = "message";
+    private static final String TEXT = "text";
+    private static final String POSTBACK = "postback";
 
-    private static final String  SENDER = "sender";
-    private static final String  MESSAGING = "messaging";
-    private static final String  ENTRY = "entry";
-    private static final String  RECIPIENT = "recipient";
-    private static final String  MESSAGE = "message";
-    private static final String  TEXT = "text";
 
     private static final String HELLO_MESSAGE = "hello";
     private static final String ASSISTANCE_MESSAGE = "assistance";
     private static final String PROVIDE_ASSISTANCE_MESSAGE = "provide assistance";
     private static final String ACCEPT_MESSAGE = "accept";
     private static final String REJECT_MESSAGE = "reject";
-
     private static final String BOT_TO_HELLO = "Do you need assistance or can help?";
     private static final String BOT_DESCRIBE_ASSISTANCE = "Describe, what kind of assistance you need";
     private static final String BOT_LIST_OF_PERSONS = "Here are a persons who need some assistance. Pick one.";
     private static final String BOT_REQUEST_ACCEPTED = "Your request accepted";
     private static final String BOT_REQUEST_MESSAGE = "You'll be notified when someone can help you";
     private static final String BOT_REQUEST_EXPIRATION_WARNING = "Your will be expired in 2 hours";
+    private static final String BOT_GENERAL_MESSAGE = "Hi there!";
 
-    Map <String, Person> providers = new HashMap<>();
-    Map<String , Person> needers = new HashMap<>();
-
-
+    private static String PAGE_TOKEN = "EAAIbsSXN1U8BAM39eXNXAI8Hj5rUwaTG1zOw6Pfdiwfkc2QnAMD4ZBXJOkakDwaHbV5kuouSKZCPAIcZB3xDZBUaZCuuXXWuSt2vuMQRz6y2QDslJQZBI5ZC4ZBz1u8q4RaFzvX8PZCExsicgzvUd19K1cMwLNQgZC6ZAZBWGBFInXt1NQZDZD";
+    Map<Long, Person> providers = new HashMap<>();
+    Map<Long, Person> needers = new HashMap<>();
 
 
     @Override
@@ -74,7 +73,7 @@ public class HelloWorldServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestMessage = request.getReader().readLine();
 
-        String textResponse = "Hi there!";
+//        String textResponse = "Hi there!";
 
         JSONObject requestEntry = new JSONObject(requestMessage);
         System.out.println(requestEntry);
@@ -82,72 +81,90 @@ public class HelloWorldServlet extends HttpServlet {
         JSONObject entry = requestEntry.getJSONArray(ENTRY).getJSONObject(0);
         JSONObject messaging = entry.getJSONArray(MESSAGING).getJSONObject(0);
         JSONObject senderId = messaging.getJSONObject(SENDER);
+        Long id = senderId.getLong("id");
 
         if (!messaging.isNull(MESSAGE)) {
             JSONObject message = messaging.getJSONObject(MESSAGE);
 
-            if (!message.isNull(TEXT)){
+            if (!message.isNull(TEXT)) {
 
                 String text = message.get(TEXT).toString();
-                switch (text){
+                switch (text) {
                     case HELLO_MESSAGE:
-                        sendOptions(senderId, textResponse);
+                        sendOptions(senderId, BOT_GENERAL_MESSAGE);
+                        persistNeeder(id);
                         break;
-                    case ASSISTANCE_MESSAGE: sendOptions(senderId, BOT_DESCRIBE_ASSISTANCE);
+                    case ASSISTANCE_MESSAGE:
+                        sendOptions(senderId, BOT_DESCRIBE_ASSISTANCE);
                         break;
-                    case PROVIDE_ASSISTANCE_MESSAGE: sendOptions(senderId, BOT_LIST_OF_PERSONS);
+                    case PROVIDE_ASSISTANCE_MESSAGE:
+                        sendOptions(senderId, BOT_LIST_OF_PERSONS);
                         break;
                     default:
-                        sendTextResponse(senderId, HELLO_MESSAGE);
+                        if(needers.containsKey(id)){
+                            Person person = needers.get(id);
+                            person.setAssistanceMessage(message.getString(TEXT));
+                            sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
+                            sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
+                        }else {
+                            sendOptions(senderId, BOT_GENERAL_MESSAGE );
+                        }
                 }
             }
             //sendTextResponse(senderId, textResponse);
+        }else if(!messaging.isNull(POSTBACK)){
+
         }
     }
 
+    private void persistNeeder(Long senderId) {
+        Person person = new Person();
+        person.setId(senderId);
+        needers.put(senderId, person);
+    }
 
     private void sendOptions(JSONObject senderId, String textResponse) {
 
-            JSONObject recipient = new JSONObject();
-            recipient.put("recipient", senderId);
+        JSONObject recipient = new JSONObject();
+        recipient.put("recipient", senderId);
 
 
-            JSONObject attachmentObj = new JSONObject();
-            attachmentObj.put("type", "template");
+        JSONObject attachmentObj = new JSONObject();
+        attachmentObj.put("type", "template");
 
-            JSONObject payloadObj = new JSONObject();
-            payloadObj.put("template_type", "button");
-            payloadObj.put("text", textResponse);
+        JSONObject payloadObj = new JSONObject();
+        payloadObj.put("template_type", "button");
+        payloadObj.put("text", textResponse);
 
-            JSONArray buttonArray = new JSONArray();
+        JSONArray buttonArray = new JSONArray();
 
         JSONObject button1 = new JSONObject();
         button1.put("type", "postback");
         button1.put("payload", ASSISTANCE_MESSAGE);
         button1.put("title", "Need Assistance");
 
-            JSONObject button2 = new JSONObject();
+        JSONObject button2 = new JSONObject();
         button2.put("type", "postback");
         button2.put("payload", PROVIDE_ASSISTANCE_MESSAGE);
         button2.put("title", "Provide Assistance");
 
-            buttonArray.put(button1);
-            buttonArray.put(button2);
-            payloadObj.put("buttons", buttonArray);
+        buttonArray.put(button1);
+        buttonArray.put(button2);
+        payloadObj.put("buttons", buttonArray);
 
-            attachmentObj.put("payload", payloadObj);
+        attachmentObj.put("payload", payloadObj);
 
-            JSONObject message = new JSONObject();
-            message.put("attachment", attachmentObj);
-            recipient.put("message", message);
+        JSONObject message = new JSONObject();
+        message.put("attachment", attachmentObj);
+        recipient.put("message", message);
 
-            System.out.println(recipient.toString());
+        System.out.println(recipient.toString());
 
-            try {
-                 sendPostResponseToUser(recipient.toString());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            sendPostResponseToUser(recipient.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

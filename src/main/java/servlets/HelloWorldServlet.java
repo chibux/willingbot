@@ -136,6 +136,30 @@ public class HelloWorldServlet extends HttpServlet {
     private void respondToNeedAssistance(JSONObject senderId){
         sendTextResponse(senderId, BOT_DESCRIBE_ASSISTANCE);
 
+                    case ASSISTANCE_MESSAGE:
+                        sendOptions(senderId, BOT_DESCRIBE_ASSISTANCE);
+                        break;
+                    case PROVIDE_ASSISTANCE_MESSAGE:
+                        sendOptions(senderId, BOT_LIST_OF_PERSONS);
+                        break;
+                    case TRANSFER:
+                        contactPersonInNeed(1059287277465794L);
+                        break;
+                    default:
+                        if(needers.containsKey(id)){
+                            Person person = needers.get(id);
+                            person.setAssistanceMessage(message.getString(TEXT));
+                            sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
+                            sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
+                        }else {
+                            sendOptions(senderId, BOT_GENERAL_MESSAGE );
+                        }
+                }
+            }
+            //sendTextResponse(senderId, textResponse);
+        }else if(!messaging.isNull(POSTBACK)){
+
+        }
     }
 
     private void persistNeeder(Long senderId) {
@@ -219,5 +243,12 @@ public class HelloWorldServlet extends HttpServlet {
         }
     }
 
+    private void contactPersonInNeed(Long idPersonInNeed){
+        JSONObject sender = new JSONObject();
+        sender.put("id", idPersonInNeed);
+
+        sendTextResponse(sender, "I can provide help: " +
+                "https://www.facebook.com/profile.php?id=100001535955409");
+    }
 
 }

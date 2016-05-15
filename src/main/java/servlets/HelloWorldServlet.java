@@ -38,12 +38,11 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String TRANSFER = "transfer";
 
 
-
     private static final String HELLO_MESSAGE = "hello";
     private static final String ASSISTANCE_NEEDED = "assistance";
     private static final String PROVIDE_ASSISTANCE_MESSAGE = "provide assistance";
     private static final String ACCEPT_MESSAGE = "accept";
-    private static final String REJECT_MESSAGE = "reject";
+    private static final String REJECT_MESSAGE = "Reject";
 
     private static final String BOT_TO_HELLO = "Do you need assistance or can help?";
     private static final String BOT_SEND_LOCATION = "Please, send your location and we'll find somebody to assist you";
@@ -53,6 +52,8 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String BOT_REQUEST_MESSAGE = "You'll be notified when someone can help you";
     private static final String BOT_REQUEST_EXPIRATION_WARNING = "Your request will be expired in 2 hours";
     private static final String BOT_GENERAL_MESSAGE = "Hi there! What would you like to do?";
+    private static final String BOT_SELECTION_THANK_YOU = "Person has been notified, they will contact you shortly. Thank you!";
+
 
     private static String PAGE_TOKEN = "EAAIbsSXN1U8BAM39eXNXAI8Hj5rUwaTG1zOw6Pfdiwfkc2QnAMD4ZBXJOkakDwaHbV5kuouSKZCPAIcZB3xDZBUaZCuuXXWuSt2vuMQRz6y2QDslJQZBI5ZC4ZBz1u8q4RaFzvX8PZCExsicgzvUd19K1cMwLNQgZC6ZAZBWGBFInXt1NQZDZD";
     Map<Long, Person> providers = new HashMap<>();
@@ -100,9 +101,9 @@ public class HelloWorldServlet extends HttpServlet {
                         persistNeeder(id);
                         break;
 
-                    case TRANSFER:
-                        contactPersonInNeed(1059287277465794L);
-                        break;
+//                    case TRANSFER:
+//                        contactPersonInNeed(1059287277465794L, senderId);
+//                        break;
 
                     default:
                         if (needers.containsKey(id)) {
@@ -116,9 +117,19 @@ public class HelloWorldServlet extends HttpServlet {
                 }
             } else if (!message.isNull(ATTACHMENTS)) { // if person who needs help sends location, final message to him
                 JSONObject attachment = message.getJSONArray(ATTACHMENTS).getJSONObject(0);
+
                 if (!attachment.getJSONObject(PAYLOAD).isNull("coordinates")) {
-                    sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
-                    sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
+
+                    if (providers.containsKey(id)) {
+                        sendTextResponse(senderId, "Following people need assistance");
+                        displayPersonLst(senderId);
+                        providers.remove(id);
+
+                    } else {
+                        sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
+                        sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
+                    }
+
                 }
             }
             //sendTextResponse(senderId, textResponse);
@@ -128,7 +139,7 @@ public class HelloWorldServlet extends HttpServlet {
 
             if (userPicked.startsWith(TRANSFER)) {
                 int index = userPicked.indexOf(":");
-                String user = userPicked.substring(index+1);
+                String user = userPicked.substring(index + 1);
                 userId = Long.parseLong(user);
                 userPicked = userPicked.substring(0, index);
             }
@@ -141,7 +152,7 @@ public class HelloWorldServlet extends HttpServlet {
                     respondToProviderAssistance(senderId);
                     break;
                 case TRANSFER:
-                    contactPersonInNeed(userId);
+                    contactPersonInNeed(userId, senderId);
                     break;
 
                 case REJECT_MESSAGE:
@@ -181,6 +192,16 @@ public class HelloWorldServlet extends HttpServlet {
 
     private void respondToProviderAssistance(JSONObject senderId) {
 
+        Person currentprovider = new Person();
+        currentprovider.setId(senderId.getLong("id"));
+        providers.put(senderId.getLong("id"), currentprovider);
+
+        sendTextResponse(senderId, BOT_SEND_LOCATION);
+
+    }
+
+
+    private void displayPersonLst(JSONObject senderId) {
         //Build mock data set
         List<Person> personLst = getMockList();
 
@@ -219,7 +240,7 @@ public class HelloWorldServlet extends HttpServlet {
         }
     }
 
-    private static JSONObject  buildUserObj(Person person) {
+    private static JSONObject buildUserObj(Person person) {
 
         JSONObject obj = new JSONObject();
 
@@ -368,7 +389,7 @@ public class HelloWorldServlet extends HttpServlet {
         }
     }
 
-    private void contactPersonInNeed(Long idPersonInNeed) {
+    private void contactPersonInNeed(Long idPersonInNeed, JSONObject senderId) {
         JSONObject sender = new JSONObject();
         sender.put("id", idPersonInNeed);
 
@@ -376,5 +397,8 @@ public class HelloWorldServlet extends HttpServlet {
                 "https://www.facebook.com/profile.php?id=100001535955409");
 
         rejectButton(sender, "If you don't want this person to help you, press REJECT");
+
+
+        sendTextResponse(senderId, BOT_SELECTION_THANK_YOU);
     }
 }

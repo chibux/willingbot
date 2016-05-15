@@ -8,6 +8,8 @@ package servlets;
 public class Person {
 
     private Long id;
+    private String name;
+    private String image;
     private String title;
     private String locationUrl;
     private String coordinateLong;
@@ -78,5 +80,23 @@ public class Person {
 
     public void setAssistanceMessage(String assistanceMessage) {
         this.assistanceMessage = assistanceMessage;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setImage(String imageUrl) {
+        this.image = imageUrl;
+    }
+
+
+    public String getName() {
+      return name;
+    }
+
+    public String getImage() {
+        return image;
     }
 }

@@ -18,8 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author trierra
@@ -125,6 +124,14 @@ public class HelloWorldServlet extends HttpServlet {
             //sendTextResponse(senderId, textResponse);
         } else if (!messaging.isNull(POSTBACK)) {
             String userPicked = messaging.getJSONObject(POSTBACK).getString(PAYLOAD);
+            Long userId = 0l;
+
+            if (userPicked.startsWith(TRANSFER)) {
+                int index = userPicked.indexOf(":");
+                String user = userPicked.substring(index+1);
+                userId = Long.parseLong(user);
+                userPicked = userPicked.substring(0, index);
+            }
             System.out.println(PAYLOAD + " = ==== == == " + userPicked);
             switch (userPicked) {
                 case ASSISTANCE_NEEDED:
@@ -133,12 +140,101 @@ public class HelloWorldServlet extends HttpServlet {
                 case PROVIDE_ASSISTANCE_MESSAGE:
                     respondToProviderAssistance(senderId);
                     break;
+                case TRANSFER:
+                    contactPersonInNeed(userId);
+                    break;
 
             }
         }
     }
 
+
+    private List<Person> getMockList() {
+        List<Person> personLst = new ArrayList<Person>();
+
+        Person person1 = new Person();
+        Long userId1 = 10153722561071553l;
+        person1.setId(userId1);
+        person1.setAssistanceMessage("Help me with fb bot");
+        person1.setImage("https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xpf1/v/t1.0-1/s200x200/11903929_10153180684406553_7027855584857045261_n.jpg?oh=d8fc2f68e2336814e4cb3d50f5c721dc&oe=57E2927F&__gda__=1474784519_a80a82f0ed90f0859e8c09430c96aef2");
+        person1.setName("Kavitha");
+
+
+        Person person2 = new Person();
+        Long userId2 = 10209410947580516l;
+        person2.setId(userId2);
+        person2.setAssistanceMessage("Car pool, anyone");
+        person2.setImage("https://scontent.xx.fbcdn.net/v/t1.0-1/p200x200/11139377_10209100092089323_54657112189060039_n.jpg?oh=4c5c7a38cbc73df9782a017c5f54c8b7&oe=57E06C55");
+        person2.setName("Anne");
+
+        personLst.add(person1);
+        personLst.add(person2);
+
+        return personLst;
+    }
+
+
     private void respondToProviderAssistance(JSONObject senderId) {
+
+        //Build mock data set
+        List<Person> personLst = getMockList();
+
+        JSONObject recipient = new JSONObject();
+        recipient.put("recipient", senderId);
+
+
+        JSONObject attachmentObj = new JSONObject();
+        attachmentObj.put("type", "template");
+
+        JSONObject payloadObj = new JSONObject();
+        payloadObj.put("template_type", "generic");
+
+
+        JSONArray elementObjArray = new JSONArray();
+        JSONObject userObj;
+        for (Person person : personLst) {
+            userObj = buildUserObj(person);
+            elementObjArray.put(userObj);
+        }
+
+        payloadObj.put("elements", elementObjArray);
+
+        attachmentObj.put("payload", payloadObj);
+
+        JSONObject message = new JSONObject();
+        message.put("attachment", attachmentObj);
+        recipient.put("message", message);
+
+        System.out.println(recipient.toString());
+
+        try {
+            sendPostResponseToUser(recipient.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static JSONObject  buildUserObj(Person person) {
+
+        JSONObject obj = new JSONObject();
+
+        obj.put("title", person.getName());
+        obj.put("subtitle", person.getAssistanceMessage());
+        obj.put("image_url", person.getImage());
+
+
+        String userId = TRANSFER + ":" + person.getId();
+
+        JSONArray buttonArray = new JSONArray();
+        JSONObject button1 = new JSONObject();
+        button1.put("type", "postback");
+        button1.put("payload", userId);
+        button1.put("title", "Select Task");
+        buttonArray.put(button1);
+
+        obj.put("buttons", buttonArray);
+
+        return obj;
     }
 
     private void respondToNeedAssistance(JSONObject senderId) {
@@ -223,6 +319,7 @@ public class HelloWorldServlet extends HttpServlet {
             request.setEntity(new StringEntity(message));
             CloseableHttpResponse execute = httpClient.execute(https, request);
             System.out.print(execute.getStatusLine().getStatusCode());
+
             System.out.print(new java.util.Scanner(execute.getEntity().getContent(), "UTF-8").useDelimiter("\\A"));
         }
     }

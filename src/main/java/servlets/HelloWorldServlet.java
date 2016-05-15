@@ -144,6 +144,11 @@ public class HelloWorldServlet extends HttpServlet {
                     contactPersonInNeed(userId);
                     break;
 
+                case REJECT_MESSAGE:
+                    JSONObject hepler = new JSONObject();
+                    hepler.put("id", 1059287277465794L);
+                    sendTextResponse(hepler, "Thank you! But this person was already helped.");
+
             }
         }
     }
@@ -229,7 +234,7 @@ public class HelloWorldServlet extends HttpServlet {
         JSONObject button1 = new JSONObject();
         button1.put("type", "postback");
         button1.put("payload", userId);
-        button1.put("title", "Select Task");
+        button1.put("title", "Select Person");
         buttonArray.put(button1);
 
         obj.put("buttons", buttonArray);
@@ -293,6 +298,45 @@ public class HelloWorldServlet extends HttpServlet {
 
     }
 
+    private void rejectButton(JSONObject senderId, String textResponse) {
+
+        JSONObject recipient = new JSONObject();
+        recipient.put("recipient", senderId);
+
+
+        JSONObject attachmentObj = new JSONObject();
+        attachmentObj.put("type", "template");
+
+        JSONObject payloadObj = new JSONObject();
+        payloadObj.put("template_type", "button");
+        payloadObj.put("text", textResponse);
+
+        JSONArray buttonArray = new JSONArray();
+
+        JSONObject button1 = new JSONObject();
+        button1.put("type", "postback");
+        button1.put("payload", REJECT_MESSAGE);
+        button1.put("title", REJECT_MESSAGE);
+
+        buttonArray.put(button1);
+        payloadObj.put("buttons", buttonArray);
+
+        attachmentObj.put("payload", payloadObj);
+
+        JSONObject message = new JSONObject();
+        message.put("attachment", attachmentObj);
+        recipient.put("message", message);
+
+        System.out.println(recipient.toString());
+
+        try {
+            sendPostResponseToUser(recipient.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void sendTextResponse(JSONObject senderId, String textResponse) {
         JSONObject response = new JSONObject();
         response.put(RECIPIENT, senderId);
@@ -330,6 +374,7 @@ public class HelloWorldServlet extends HttpServlet {
 
         sendTextResponse(sender, "I can provide help: " +
                 "https://www.facebook.com/profile.php?id=100001535955409");
-    }
 
+        rejectButton(sender, "If you don't want this person to help you, press REJECT");
+    }
 }

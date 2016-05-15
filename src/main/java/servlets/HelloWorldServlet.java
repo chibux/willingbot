@@ -45,10 +45,11 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String REJECT_MESSAGE = "Reject";
 
     private static final String BOT_TO_HELLO = "Do you need assistance or can help?";
-    private static final String BOT_SEND_LOCATION = "Please, send your location and we'll find somebody to assist you";
+    private static final String BOT_SEND_LOCATION = "Please, send your location and we'll find somebody to assist you around your location";
+    private static final String BOT_SEND_LOCATION_PROVIDER = "Please, send your location and we will show you who needs assistance around you.";
     private static final String BOT_DESCRIBE_ASSISTANCE = "Describe, what kind of assistance you need";
     private static final String BOT_LIST_OF_PERSONS = "Here are a persons who need some assistance. Pick one.";
-    private static final String BOT_REQUEST_ACCEPTED = "Your request accepted";
+    private static final String BOT_REQUEST_ACCEPTED = "Your request is accepted, you will be contacted shortly.";
     private static final String BOT_REQUEST_MESSAGE = "You'll be notified when someone can help you";
     private static final String BOT_REQUEST_EXPIRATION_WARNING = "Your request will be expired in 2 hours";
     private static final String BOT_GENERAL_MESSAGE = "Hi there! What would you like to do?";
@@ -121,7 +122,7 @@ public class HelloWorldServlet extends HttpServlet {
                 if (!attachment.getJSONObject(PAYLOAD).isNull("coordinates")) {
 
                     if (providers.containsKey(id)) {
-                        sendTextResponse(senderId, "Following people need assistance");
+                        sendTextResponse(senderId, "Following people around your location need assistance.");
                         displayPersonLst(senderId);
                         providers.remove(id);
 
@@ -196,7 +197,7 @@ public class HelloWorldServlet extends HttpServlet {
         currentprovider.setId(senderId.getLong("id"));
         providers.put(senderId.getLong("id"), currentprovider);
 
-        sendTextResponse(senderId, BOT_SEND_LOCATION);
+        sendTextResponse(senderId, BOT_SEND_LOCATION_PROVIDER);
 
     }
 

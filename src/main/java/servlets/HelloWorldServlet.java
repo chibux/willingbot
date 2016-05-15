@@ -36,6 +36,7 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String POSTBACK = "postback";
     private static final String PAYLOAD = "payload";
     private static final String ATTACHMENTS = "attachments";
+    private static final String TRANSFER = "transfer";
 
 
 
@@ -46,7 +47,7 @@ public class HelloWorldServlet extends HttpServlet {
     private static final String REJECT_MESSAGE = "reject";
 
     private static final String BOT_TO_HELLO = "Do you need assistance or can help?";
-    private static final String BOT_SEND_LOCATION= "Please, send your location and we'll find somebody to assist you";
+    private static final String BOT_SEND_LOCATION = "Please, send your location and we'll find somebody to assist you";
     private static final String BOT_DESCRIBE_ASSISTANCE = "Describe, what kind of assistance you need";
     private static final String BOT_LIST_OF_PERSONS = "Here are a persons who need some assistance. Pick one.";
     private static final String BOT_REQUEST_ACCEPTED = "Your request accepted";
@@ -99,33 +100,40 @@ public class HelloWorldServlet extends HttpServlet {
                         sendOptions(senderId, BOT_GENERAL_MESSAGE);
                         persistNeeder(id);
                         break;
+
+                    case TRANSFER:
+                        contactPersonInNeed(1059287277465794L);
+                        break;
+
                     default:
                         if (needers.containsKey(id)) {
                             //person have to describe what he needs
                             Person person = needers.get(id);
                             person.setAssistanceMessage(message.getString(TEXT));
-                            sendTextResponse(senderId, BOT_SEND_LOCATION );
+                            sendTextResponse(senderId, BOT_SEND_LOCATION);
                         } else {
                             sendOptions(senderId, BOT_GENERAL_MESSAGE);
                         }
                 }
-            } else if (!message.isNull(ATTACHMENTS)){ // if person who needs help sends location, final message to him
+            } else if (!message.isNull(ATTACHMENTS)) { // if person who needs help sends location, final message to him
                 JSONObject attachment = message.getJSONArray(ATTACHMENTS).getJSONObject(0);
-                if (!attachment.getJSONObject(PAYLOAD).isNull("coordinates")){
+                if (!attachment.getJSONObject(PAYLOAD).isNull("coordinates")) {
                     sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
                     sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
                 }
-
             }
             //sendTextResponse(senderId, textResponse);
         } else if (!messaging.isNull(POSTBACK)) {
             String userPicked = messaging.getJSONObject(POSTBACK).getString(PAYLOAD);
             System.out.println(PAYLOAD + " = ==== == == " + userPicked);
-            switch (userPicked){
-                case ASSISTANCE_NEEDED: respondToNeedAssistance(senderId);
+            switch (userPicked) {
+                case ASSISTANCE_NEEDED:
+                    respondToNeedAssistance(senderId);
                     break;
-                case PROVIDE_ASSISTANCE_MESSAGE: respondToProviderAssistance(senderId);
+                case PROVIDE_ASSISTANCE_MESSAGE:
+                    respondToProviderAssistance(senderId);
                     break;
+
             }
         }
     }
@@ -133,33 +141,9 @@ public class HelloWorldServlet extends HttpServlet {
     private void respondToProviderAssistance(JSONObject senderId) {
     }
 
-    private void respondToNeedAssistance(JSONObject senderId){
+    private void respondToNeedAssistance(JSONObject senderId) {
         sendTextResponse(senderId, BOT_DESCRIBE_ASSISTANCE);
 
-                    case ASSISTANCE_MESSAGE:
-                        sendOptions(senderId, BOT_DESCRIBE_ASSISTANCE);
-                        break;
-                    case PROVIDE_ASSISTANCE_MESSAGE:
-                        sendOptions(senderId, BOT_LIST_OF_PERSONS);
-                        break;
-                    case TRANSFER:
-                        contactPersonInNeed(1059287277465794L);
-                        break;
-                    default:
-                        if(needers.containsKey(id)){
-                            Person person = needers.get(id);
-                            person.setAssistanceMessage(message.getString(TEXT));
-                            sendTextResponse(senderId, BOT_REQUEST_ACCEPTED);
-                            sendTextResponse(senderId, BOT_REQUEST_EXPIRATION_WARNING);
-                        }else {
-                            sendOptions(senderId, BOT_GENERAL_MESSAGE );
-                        }
-                }
-            }
-            //sendTextResponse(senderId, textResponse);
-        }else if(!messaging.isNull(POSTBACK)){
-
-        }
     }
 
     private void persistNeeder(Long senderId) {
@@ -243,7 +227,7 @@ public class HelloWorldServlet extends HttpServlet {
         }
     }
 
-    private void contactPersonInNeed(Long idPersonInNeed){
+    private void contactPersonInNeed(Long idPersonInNeed) {
         JSONObject sender = new JSONObject();
         sender.put("id", idPersonInNeed);
 

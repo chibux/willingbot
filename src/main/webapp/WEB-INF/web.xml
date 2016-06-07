@@ -12,13 +12,4 @@
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
-    <!--<servlet>-->
-        <!--<servlet-name>Jersey Web Application</servlet-name>-->
-        <!--<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>-->
-        <!--<load-on-startup>1</load-on-startup>-->
-    <!--</servlet>-->
-    <!--<servlet-mapping>-->
-        <!--<servlet-name>Jersey Web Application</servlet-name>-->
-        <!--<url-pattern>/rest/*</url-pattern>-->
-    <!--</servlet-mapping>-->
 </web-app>
